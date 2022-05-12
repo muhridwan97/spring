@@ -22,9 +22,6 @@ internal class BankControllerTest @Autowired constructor(
     val objectMapper: ObjectMapper
 ){
 
-
-
-
     val baseUrl = "/api/banks"
 
     @Nested
