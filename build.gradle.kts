@@ -26,6 +26,7 @@ dependencies {
 	testImplementation("io.mockk:mockk:1.12.3")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	runtimeOnly("org.postgresql:postgresql")
+	implementation("org.springframework.boot:spring-boot-starter-validation")
 }
 
 tasks.withType<KotlinCompile> {

@@ -2,7 +2,6 @@ package com.example.demo.controller
 
 import com.example.demo.model.Customer
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -12,9 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
+import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
+import javax.transaction.Transactional
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -123,9 +124,11 @@ internal class WebControllerTest @Autowired constructor(
     inner class AddCustomer {
     
         @Test
+        @DirtiesContext
+        @Transactional
         fun `should add a new customer` () {
             // given
-            val customer = Customer("Muhammad", "Ridwan")
+            val customer = Customer("Muhammad", "Ramdhan")
 
             // when
             val performPost = mockMvc.post(baseUrl){
@@ -144,8 +147,13 @@ internal class WebControllerTest @Autowired constructor(
                     }
                 }
 
-            mockMvc.get("$baseUrl/${customer.lastName}")
-                .andExpect { content { json(objectMapper.writeValueAsString(customer)) } }
+            mockMvc.get("$baseUrl/findbylastname/${customer.lastName}")
+                .andExpect {
+                    status { isOk() }
+                    content { contentType(MediaType.APPLICATION_JSON) }
+                    jsonPath("$.firstName") { value("Muhammad") }
+                    jsonPath("$.lastName") { value("Ramdhan") }
+                }
 
         }
     }
