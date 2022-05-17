@@ -19,4 +19,4 @@ data class CreateProductRequest (
     @field:NotNull
     @field:Min(value = 0)
     val quantity : Int?
-        )
+    )
