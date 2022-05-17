@@ -2,6 +2,7 @@ package com.example.demo.controller
 
 import com.example.demo.model.Bank
 import com.example.demo.model.CreateProductRequest
+import com.example.demo.model.UpdateProductRequest
 import com.example.demo.model.WebResponse
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.Assertions.*
@@ -16,9 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.annotation.Commit
 import org.springframework.test.annotation.Rollback
-import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.get
-import org.springframework.test.web.servlet.post
+import org.springframework.test.web.servlet.*
 import java.util.*
 import javax.transaction.Transactional
 
@@ -51,6 +50,7 @@ internal class ProductControllerTest @Autowired constructor(
             val performPost = mockMvc.post(baseUrl){
                 contentType = MediaType.APPLICATION_JSON
                 content = objectMapper.writeValueAsString(newProduct)
+//                header("X-Api-Key", "SECRET")
             }
 
             // then
@@ -152,6 +152,130 @@ internal class ProductControllerTest @Autowired constructor(
                     jsonPath("$.data.name"){value("Ridwan")}
 
                 }
+            
+        }
+    }
+    
+    @Nested
+    @DisplayName("PATCH /api/products/{id}")
+    @TestInstance(Lifecycle.PER_CLASS)
+    inner class PatchProduct {
+    
+        @Test
+        fun `should updated an existing product` () {
+            // given
+            val updateProduct = UpdateProductRequest(
+                "Ramdhan",500,5)
+            val idProduct = "A001"
+
+            // when
+            val performPatch = mockMvc.patch("$baseUrl/$idProduct"){
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(updateProduct )
+            }
+
+            // then
+            performPatch
+                .andDo { print() }
+                .andExpect {
+                    status { isOk() }
+                    content {
+                        contentType(MediaType.APPLICATION_JSON)
+                        json(objectMapper.writeValueAsString(WebResponse(
+                            code = 200,
+                            status = "OK",
+                            data = updateProduct
+                        )))
+                    }
+                }
+
+            mockMvc.get("$baseUrl/${idProduct}")
+                .andExpect { content { json(objectMapper.writeValueAsString(
+                    WebResponse(
+                        code = 200,
+                        status = "OK",
+                        data = updateProduct
+                    ) ))
+                }
+                }
+        }
+        @Test
+        fun `should return NOT FOUND if id does not exist` () {
+            // given
+            val updateProduct = UpdateProductRequest(
+                "Ramdhan",500,5)
+            val idProduct = "A002"
+
+            // when
+            val performPatch = mockMvc.patch("$baseUrl/$idProduct"){
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(updateProduct )
+            }
+
+            // then
+            performPatch
+                .andDo { print() }
+                .andExpect {
+                    status { isOk() }
+                    content {
+                        contentType(MediaType.APPLICATION_JSON)
+                        jsonPath("$.code"){value(404)}
+                        jsonPath("$.status"){value("NOT FOUND")}
+                    }
+                }
+        }
+        @Test
+        fun `should return BAD REQUEST if invalid body` () {
+            // given
+            val updateProduct = UpdateProductRequest(
+                "Ramdhan",0,-1)
+            val idProduct = "A001"
+
+            // when
+            val performPatch = mockMvc.patch("$baseUrl/$idProduct"){
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(updateProduct )
+            }
+
+            // then
+            performPatch
+                .andDo { print() }
+                .andExpect {
+                    status { isOk() }
+                    content {
+                        contentType(MediaType.APPLICATION_JSON)
+                        jsonPath("$.code"){value(400)}
+                        jsonPath("$.status"){value("BAD REQUEST")}
+                    }
+                }
+
+        }
+    }
+    @Nested
+    @DisplayName("DELETE /api/products/{id}")
+    @TestInstance(Lifecycle.PER_CLASS)
+    inner class DeleteProduct {
+        
+        @Test
+        fun `should delete product` () {
+            // given
+            val idProduct = "A001"
+            
+            // when
+            val performDelete = mockMvc.delete("$baseUrl/products/$idProduct"){
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(idProduct)
+            }
+
+            // then
+            performDelete
+                .andDo { print() }
+                .andExpect { status { isNotFound() } }
+
+//            mockMvc.get("$baseUrl/$idProduct")
+//                .andExpect {
+//                    status { isNotFound() }
+//                }
             
         }
     }

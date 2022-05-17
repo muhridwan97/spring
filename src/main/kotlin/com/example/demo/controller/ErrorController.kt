@@ -1,6 +1,7 @@
 package com.example.demo.controller
 
 import com.example.demo.error.NotFoundException
+import com.example.demo.error.UnauthorizedException
 import com.example.demo.model.WebResponse
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -26,6 +27,15 @@ class ErrorController {
             code = 404,
             status = "NOT FOUND",
             data = "Not Found"
+        )
+    }
+
+    @ExceptionHandler(value = [UnauthorizedException::class])
+    fun unauthorized(unauthorizedException: UnauthorizedException):WebResponse<String>{
+        return WebResponse(
+            code = 401,
+            status = "UNAUTHORIZED",
+            data = "Please put your X-Api-Key"
         )
     }
 
